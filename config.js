@@ -22,15 +22,15 @@ module.exports = {
     adminPass: "DEFAULT",
     gameMass: 20000,
     maxFood: 1500,
-    maxVirus: 50,
+    maxVirus: 70,
     slowBase: 4.5,
     logChat: 0,
     networkUpdateFactor: 60,
     maxHeartbeatInterval: 5000,
     foodUniformDisposition: true,
     newPlayerInitialPosition: "farthest",
-    massLossRate: 10,
-    minMassLoss: 50,
+    massLossRate: 2,
+    minMassLoss: 100,
     sqlinfo: {
       fileName: "db.sqlite3",
     }
