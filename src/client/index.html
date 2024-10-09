@@ -38,16 +38,18 @@
     <div id="startMenuWrapper">
         <div id="startMenu">
             <p>PLYR Agar</p>
-            <input type="text" tabindex="0" autofocus placeholder="Enter your PLYR[ID]" id="playerNameInput"
-                maxlength="25" />
+            <form id="loginForm">
+                <input type="text" tabindex="0" placeholder="Enter your PLYR[ID]" id="playerNameInput"
+                    maxlength="25" />
 
 
-            <input type="text" tabindex="0" autofocus placeholder="Enter your 2FA" id="playerPasswordInput"
-                maxlength="6" />
+                <input type="text" tabindex="0" placeholder="Enter your 2FA" id="playerPasswordInput"
+                    maxlength="6" />
 
-            <b class="input-error">PLYR[ID] is invalid!</b>
-            <br />
-            <a onclick="document.getElementById('spawn_cell').play();"><button id="startButton">Play</button></a>
+                <b class="input-error">PLYR[ID] is invalid!</b>
+                <br />
+                <button type="submit" id="startButton">Play</button>
+            </form>
             <button id="spectateButton">Spectate</button>
             <div id="instructions">
                 <h3>Gameplay</h3>

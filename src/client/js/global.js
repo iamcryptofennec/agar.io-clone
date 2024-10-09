@@ -25,7 +25,7 @@ module.exports = {
     kicked: false,
     continuity: true,
     startPingTime: 0,
-    toggleMassState: 0,
+    toggleMassState: 1,
     backgroundColor: '#000000',
     lineColor: '#000000',
 };

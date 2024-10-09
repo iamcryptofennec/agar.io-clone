@@ -173,7 +173,7 @@ class Canvas {
 
     gameInput(mouse) {
         if (!this.directionLock) {
-            console.log(this.width, this.height, global.screen.width, global.screen.height, global.originalScreenWidth);
+            //console.log(this.width, this.height, global.screen.width, global.screen.height, global.originalScreenWidth);
             this.parent.target.x = mouse.clientX - (global.originalScreenWidth || this.width) / 2;
             this.parent.target.y = mouse.clientY - (global.originalScreenHeight || this.height) / 2;
             global.target = this.parent.target;

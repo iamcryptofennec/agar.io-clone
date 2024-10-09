@@ -101,6 +101,8 @@ const drawCells = (cells, playerConfig, toggleMassState, borders, graph) => {
         graph.strokeText(cell.name, cell.x, cell.y);
         graph.fillText(cell.name, cell.x, cell.y);
 
+        
+
         // Draw the mass (if enabled)
         if (toggleMassState === 1) {
             graph.font = 'bold ' + Math.max(fontSize / 3 * 2, 10) + 'px sans-serif';
@@ -153,26 +155,26 @@ const drawErrorMessage = (message, graph, screen) => {
 }
 
 // Draw leaderboard //
-const drawLeaderboard = (leaderboard, users, player) => {
+const drawLeaderboard = (leaderboard, playerAmount, player) => {
 
-    console.log('drawLeaderboard', leaderboard, users);
+    //console.log('drawLeaderboard', leaderboard, users);
 
     var status = '<span class="title">Leaderboard</span>';
     for (var i = 0; i < leaderboard.length; i++) {
 
         // map .mass from users that match to leaderboard[i].id
-        const user = users.find(user => user.id === leaderboard[i].id);
-        const mass = user ? user.massTotal : 0;
+        // const user = users.find(user => user.id === leaderboard[i].id);
+        // const mass = user ? user.massTotal : 0;
 
         status += '<br />';
         if (leaderboard[i].id == player.id) {
-            status += '<span class="me">' + (i + 1) + '. ' + leaderboard[i].name.toUpperCase() + '-' + mass + "</span>";
+            status += '<span class="me">' + (i + 1) + '. ' + leaderboard[i].name.toUpperCase() + '-' + Math.floor(leaderboard[i].mass) + "</span>";
         } else {
-            status += (i + 1) + '. ' + leaderboard[i].name.toUpperCase() + '-' + mass;
+            status += (i + 1) + '. ' + leaderboard[i].name.toUpperCase() + '-' + Math.floor(leaderboard[i].mass);
         }
     }
     //console.log(users);
-    status += '<br />Players: ' + users.length;
+    status += '<br />Players: ' + playerAmount;
     document.getElementById('status').innerHTML = status;
 }
 

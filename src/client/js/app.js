@@ -26,31 +26,41 @@ async function startGame(type) {
     global.screen.height = window.innerHeight;
 
 
-    // Do login first //
-    let response = await fetch('/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            playerName: global.playerName,
-            playerPassword: global.playerPassword
+    // Do login first for Players //
+    let response = undefined;
+    if (type === 'player') {
+        response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                playerName: global.playerName,
+                playerPassword: global.playerPassword
+            })
         })
-    })
-    .then(response => response.json());
+            .then(response => response.json());
 
-    if (!response.success) {
-        var nickErrorText = document.querySelector('#startMenu .input-error');
-        nickErrorText.innerHTML = response.error;
-        nickErrorText.style.display = 'block';
-        return;
+        if (!response.success) {
+            var nickErrorText = document.querySelector('#startMenu .input-error');
+            nickErrorText.innerHTML = response.error;
+            nickErrorText.style.display = 'block';
+            return;
+        }
+
+        // Save the PLYR[ID] to localStorage
+        window.localStorage.setItem('previousPLYRID', global.playerName);
     }
 
 
     document.getElementById('startMenuWrapper').style.maxHeight = '0px';
     document.getElementById('gameAreaWrapper').style.opacity = 1;
     if (!socket) {
-        socket = io({ query: "type=" + type + "&sessionJwt=" + response.data.sessionJwt });
+        if (type === 'player') {
+            socket = io({ query: "type=" + type + "&sessionJwt=" + response.data.sessionJwt });
+        } else {
+            socket = io({ query: "type=" + type });
+        }
         setupSocket(socket);
     }
     if (!global.animLoopHandle)
@@ -74,15 +84,29 @@ function validNick() {
 
 window.onload = function () {
 
-    var btn = document.getElementById('startButton'),
+    var loginForm = document.getElementById('loginForm'),
+        //btn = document.getElementById('startButton'),
         btnS = document.getElementById('spectateButton'),
-        nickErrorText = document.querySelector('#startMenu .input-error');
+        nickErrorText = document.querySelector('#startMenu .input-error'),
+        playerNameInput = document.getElementById('playerNameInput'),
+        playerPasswordInput = document.getElementById('playerPasswordInput');
+
+    let previousPLYRID = window.localStorage.getItem('previousPLYRID');
+    if (previousPLYRID) {
+        playerPasswordInput.focus();
+        // Set the value of the playerNameInput to the previous PLYR[ID]
+        playerNameInput.value = previousPLYRID;
+    } else {
+        playerNameInput.focus();
+    }
+    
 
     btnS.onclick = function () {
         startGame('spectator');
     };
 
-    btn.onclick = function () {
+    loginForm.onsubmit = function (e) {
+        e.preventDefault();
 
         // Checks if the nick is valid.
         if (validNick()) {
@@ -93,20 +117,6 @@ window.onload = function () {
             nickErrorText.innerHTML = 'PLYR[ID] is invalid!';
         }
     };
-
-
-    playerNameInput.addEventListener('keypress', function (e) {
-        var key = e.which || e.keyCode;
-
-        if (key === global.KEY_ENTER) {
-            if (validNick()) {
-                nickErrorText.style.opacity = 0;
-                startGame('player');
-            } else {
-                nickErrorText.style.opacity = 1;
-            }
-        }
-    });
 };
 
 // TODO: Break out into GameControls.
@@ -262,8 +272,8 @@ function setupSocket(socket) {
 
     socket.on('leaderboard', (data) => {
         leaderboard = data.leaderboard;
-        render.drawLeaderboard(leaderboard, users, player);
-        
+        playerAmount = data.players;
+        render.drawLeaderboard(leaderboard, playerAmount, player);
     });
 
     socket.on('serverMSG', function (data) {
@@ -289,7 +299,7 @@ function setupSocket(socket) {
         viruses = virusList;
         fireFood = massList;
 
-        render.drawLeaderboard(leaderboard, users, player);
+
     });
 
     // Death.
@@ -354,19 +364,19 @@ function adjustViewableArea() {
 
     let maxCellSize = Math.max(...player.cells.map(cell => cell.radius * 2));
 
-    if (maxCellSize > global.screen.width * 0.33) {
+    if (maxCellSize > global.screen.width * 0.33 || maxCellSize > global.screen.height * 0.33) {
         // Log cell size for debugging
         console.log(`Player's cell is larger than 33% of the screen width: ${maxCellSize}px`);
 
         // Expand the viewable area to ensure all elements are visible
         let scalingFactor = 1.2;  // Increase the scaling factor for better visibility
-        
+
         // Original screen size //
         if (!global.originalScreenWidth) {
             global.originalScreenWidth = global.screen.width;
             global.originalScreenHeight = global.screen.height;
         }
-        
+
         global.screen.width *= scalingFactor;
         global.screen.height *= scalingFactor;
 
@@ -387,6 +397,7 @@ function adjustViewableArea() {
         // Emit the resized window dimensions to the server
         socket.emit('windowResized', { screenWidth: global.screen.width, screenHeight: global.screen.height });
     }
+    
 }
 
 function gameLoop() {
@@ -445,9 +456,9 @@ function gameLoop() {
             return obj1.mass - obj2.mass;
         });
         render.drawCells(cellsToDraw, playerConfig, global.toggleMassState, borders, graph);
-       // console.log('target',window.canvas.target);
+        // console.log('target',window.canvas.target);
 
-       graph.restore();
+        graph.restore();
 
         socket.emit('0', window.canvas.target); // playerSendTarget "Heartbeat".
     }
