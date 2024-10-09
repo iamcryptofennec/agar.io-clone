@@ -17,10 +17,9 @@ class Canvas {
         this.joystick = nipplejs.create({
             zone: document.getElementById('joystick-zone'),  // assuming there is a div with id 'joystick-zone'
             mode: 'static',
-            position: { left: '50%', bottom: '10%' },
             color: 'white',
-            size: 150,
-            multitouch: true,
+            size: 120,
+
         });
 
         // Handle joystick move events

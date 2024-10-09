@@ -174,6 +174,33 @@ function handleDisconnect() {
     }
 }
 
+// Draw leaderboard //
+function drawLeaderboard(leaderboard, users) {
+    var status = '<span class="title">Leaderboard</span>';
+    for (var i = 0; i < leaderboard.length; i++) {
+
+        // map .mass from users that match to leaderboard[i].id
+        const user = users.find(user => user.id === leaderboard[i].id);
+        const mass = user ? user.massTotal : 0;
+
+        status += '<br />';
+        if (leaderboard[i].id == player.id) {
+            if (leaderboard[i].name.length !== 0)
+                status += '<span class="me">' + (i + 1) + '. ' + leaderboard[i].name + '-' + mass + "</span>";
+            else
+                status += '<span class="me">' + (i + 1) + ". An unnamed cell-" + mass + "</span>";
+        } else {
+            if (leaderboard[i].name.length !== 0)
+                status += (i + 1) + '. ' + leaderboard[i].name + '-' + mass;
+            else
+                status += (i + 1) + '. An unnamed cell-' + mass;
+        }
+    }
+    //console.log(users);
+    status += '<br />Players: ' + users.length;
+    document.getElementById('status').innerHTML = status;
+}
+
 // socket stuff.
 function setupSocket(socket) {
     // Handle ping.
@@ -233,23 +260,8 @@ function setupSocket(socket) {
 
     socket.on('leaderboard', (data) => {
         leaderboard = data.leaderboard;
-        var status = '<span class="title">Leaderboard</span>';
-        for (var i = 0; i < leaderboard.length; i++) {
-            status += '<br />';
-            if (leaderboard[i].id == player.id) {
-                if (leaderboard[i].name.length !== 0)
-                    status += '<span class="me">' + (i + 1) + '. ' + leaderboard[i].name + '-' + leaderboard[i].mass + "</span>";
-                else
-                    status += '<span class="me">' + (i + 1) + ". An unnamed cell-" + leaderboard[i].mass + "</span>";
-            } else {
-                if (leaderboard[i].name.length !== 0)
-                    status += (i + 1) + '. ' + leaderboard[i].name + '-' + leaderboard[i].mass;
-                else
-                    status += (i + 1) + '. An unnamed cell-' + leaderboard[i].mass;
-            }
-        }
-        //status += '<br />Players: ' + data.players;
-        document.getElementById('status').innerHTML = status;
+        drawLeaderboard(leaderboard, users);
+        
     });
 
     socket.on('serverMSG', function (data) {
@@ -274,6 +286,8 @@ function setupSocket(socket) {
         foods = foodsList;
         viruses = virusList;
         fireFood = massList;
+
+        drawLeaderboard(leaderboard, users);
     });
 
     // Death.

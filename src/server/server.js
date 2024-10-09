@@ -290,18 +290,18 @@ const tickGame = () => {
 const calculateLeaderboard = () => {
     const topPlayers = map.players.getTopPlayers();
 
-    //if (leaderboard.length !== topPlayers.length) {
-    leaderboard = topPlayers;
-    leaderboardChanged = true;
-    // } else {
-    //     for (let i = 0; i < leaderboard.length; i++) {
-    //         if (leaderboard[i].id !== topPlayers[i].id) {
-    //             leaderboard = topPlayers;
-    //             leaderboardChanged = true;
-    //             break;
-    //         }
-    //     }
-    // }
+    if (leaderboard.length !== topPlayers.length) {
+        leaderboard = topPlayers;
+        leaderboardChanged = true;
+    } else {
+        for (let i = 0; i < leaderboard.length; i++) {
+            if (leaderboard[i].id !== topPlayers[i].id) {
+                leaderboard = topPlayers;
+                leaderboardChanged = true;
+                break;
+            }
+        }
+    }
 }
 
 const gameloop = () => {
@@ -317,9 +317,9 @@ const sendUpdates = () => {
     spectators.forEach(updateSpectator);
     map.enumerateWhatPlayersSee(function (playerData, visiblePlayers, visibleFood, visibleMass, visibleViruses) {
         sockets[playerData.id].emit('serverTellPlayerMove', playerData, visiblePlayers, visibleFood, visibleMass, visibleViruses);
-        //if (leaderboardChanged) {
+        if (leaderboardChanged) {
         sendLeaderboard(sockets[playerData.id]);
-        // }
+         }
     });
 
     leaderboardChanged = false;
