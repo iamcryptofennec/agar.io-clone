@@ -67,16 +67,6 @@ window.onload = function () {
         }
     };
 
-    var settingsMenu = document.getElementById('settingsButton');
-    var settings = document.getElementById('settings');
-
-    settingsMenu.onclick = function () {
-        if (settings.style.maxHeight == '300px') {
-            settings.style.maxHeight = '0px';
-        } else {
-            settings.style.maxHeight = '300px';
-        }
-    };
 
     playerNameInput.addEventListener('keypress', function (e) {
         var key = e.which || e.keyCode;
@@ -123,30 +113,59 @@ global.target = target;
 window.canvas = new Canvas();
 window.chat = new ChatClient();
 
-var visibleBorderSetting = document.getElementById('visBord');
-visibleBorderSetting.onchange = settings.toggleBorder;
-
-var showMassSetting = document.getElementById('showMass');
-showMassSetting.onchange = settings.toggleMass;
-
-var continuitySetting = document.getElementById('continuity');
-continuitySetting.onchange = settings.toggleContinuity;
-
-var roundFoodSetting = document.getElementById('roundFood');
-roundFoodSetting.onchange = settings.toggleRoundFood;
-
 var c = window.canvas.cv;
+
 var graph = c.getContext('2d');
 
-$("#feed").click(function () {
+
+document.getElementById("feed").onclick = function () {
     socket.emit('1');
     window.canvas.reenviar = false;
-});
+};
 
-$("#split").click(function () {
+document.getElementById("feed").ontouchstart = function () {
+    socket.emit('1');
+    window.canvas.reenviar = false;
+};
+
+document.getElementById("split").onclick = function () {
     socket.emit('2');
     window.canvas.reenviar = false;
+};
+
+document.getElementById("split").ontouchstart = function () {
+    socket.emit('2');
+    window.canvas.reenviar = false;
+};
+
+// Disable zoom on desktop //
+document.addEventListener("keydown", function (e) {
+    if (
+
+        e.ctrlKey &&
+        (e.keyCode == "61" ||
+            e.keyCode == "107" ||
+            e.keyCode == "173" ||
+            e.keyCode == "109" ||
+            e.keyCode == "187" ||
+            e.keyCode == "189")
+    ) {
+        e.preventDefault();
+    }
 });
+document.addEventListener(
+    "wheel",
+    function (e) {
+        if (e.ctrlKey) {
+            e.preventDefault();
+        }
+    },
+    {
+        passive: false
+    }
+);
+
+
 
 function handleDisconnect() {
     socket.close();
@@ -190,6 +209,12 @@ function setupSocket(socket) {
         resize();
     });
 
+    // socket.on('eaten', (data) => {
+    //     console.log('eaten', data);
+    //     document.getElementById('split_cell').currentTime = 0;
+    //     document.getElementById('split_cell').play();
+    // });
+
     socket.on('playerDied', (data) => {
         const player = isUnnamedCell(data.playerEatenName) ? 'An unnamed cell' : data.playerEatenName;
         //const killer = isUnnamedCell(data.playerWhoAtePlayerName) ? 'An unnamed cell' : data.playerWhoAtePlayerName;
@@ -213,14 +238,14 @@ function setupSocket(socket) {
             status += '<br />';
             if (leaderboard[i].id == player.id) {
                 if (leaderboard[i].name.length !== 0)
-                    status += '<span class="me">' + (i + 1) + '. ' + leaderboard[i].name + "</span>";
+                    status += '<span class="me">' + (i + 1) + '. ' + leaderboard[i].name + '-' + leaderboard[i].mass + "</span>";
                 else
-                    status += '<span class="me">' + (i + 1) + ". An unnamed cell</span>";
+                    status += '<span class="me">' + (i + 1) + ". An unnamed cell-" + leaderboard[i].mass + "</span>";
             } else {
                 if (leaderboard[i].name.length !== 0)
-                    status += (i + 1) + '. ' + leaderboard[i].name;
+                    status += (i + 1) + '. ' + leaderboard[i].name + '-' + leaderboard[i].mass;
                 else
-                    status += (i + 1) + '. An unnamed cell';
+                    status += (i + 1) + '. An unnamed cell-' + leaderboard[i].mass;
             }
         }
         //status += '<br />Players: ' + data.players;
@@ -307,12 +332,59 @@ function animloop() {
     gameLoop();
 }
 
+function adjustViewableArea() {
+
+    //console.log(player);
+
+    let maxCellSize = Math.max(...player.cells.map(cell => cell.radius * 2));
+
+    if (maxCellSize > global.screen.width * 0.33) {
+        // Log cell size for debugging
+        console.log(`Player's cell is larger than 33% of the screen width: ${maxCellSize}px`);
+
+        // Expand the viewable area to ensure all elements are visible
+        let scalingFactor = 1.2;  // Increase the scaling factor for better visibility
+        
+        // Original screen size //
+        if (!global.originalScreenWidth) {
+            global.originalScreenWidth = global.screen.width;
+            global.originalScreenHeight = global.screen.height;
+        }
+        
+        global.screen.width *= scalingFactor;
+        global.screen.height *= scalingFactor;
+
+        global.scalingFactor = scalingFactor;
+
+        // Update canvas size
+        c.width = global.screen.width;
+        c.height = global.screen.height;
+
+        // Update player screen size
+        player.screenWidth = global.screen.width;
+        player.screenHeight = global.screen.height;
+
+        // Ensure the player remains centered
+        player.x = Math.max(Math.min(player.x, global.game.width - global.screen.width / 2), global.screen.width / 2);
+        player.y = Math.max(Math.min(player.y, global.game.height - global.screen.height / 2), global.screen.height / 2);
+
+        // Emit the resized window dimensions to the server
+        socket.emit('windowResized', { screenWidth: global.screen.width, screenHeight: global.screen.height });
+    }
+}
+
 function gameLoop() {
     if (global.gameStart) {
+
+        graph.clearRect(0, 0, global.screen.width, global.screen.height);
         graph.fillStyle = global.backgroundColor;
         graph.fillRect(0, 0, global.screen.width, global.screen.height);
+        graph.save();
 
-        render.drawGrid(global, player, global.screen, graph);
+        if (global.playerType == 'player') {
+            adjustViewableArea();
+        }
+        //render.drawGrid(global, player, global.screen, graph);
         foods.forEach(food => {
             let position = getPosition(food, player, global.screen);
             render.drawFood(position, food, graph);
@@ -333,9 +405,9 @@ function gameLoop() {
             top: global.screen.height / 2 - player.y,
             bottom: global.screen.height / 2 + global.game.height - player.y
         }
-        if (global.borderDraw) {
-            render.drawBorder(borders, graph);
-        }
+        //if (global.borderDraw) {
+        render.drawBorder(borders, graph);
+        //}
 
         var cellsToDraw = [];
         for (var i = 0; i < users.length; i++) {
@@ -357,6 +429,9 @@ function gameLoop() {
             return obj1.mass - obj2.mass;
         });
         render.drawCells(cellsToDraw, playerConfig, global.toggleMassState, borders, graph);
+       // console.log('target',window.canvas.target);
+
+       graph.restore();
 
         socket.emit('0', window.canvas.target); // playerSendTarget "Heartbeat".
     }
@@ -367,8 +442,16 @@ window.addEventListener('resize', resize);
 function resize() {
     if (!socket) return;
 
-    player.screenWidth = c.width = global.screen.width = global.playerType == 'player' ? window.innerWidth : global.game.width;
-    player.screenHeight = c.height = global.screen.height = global.playerType == 'player' ? window.innerHeight : global.game.height;
+    // reset original screen size //
+    global.originalScreenWidth = window.innerWidth;
+    global.originalScreenHeight = window.innerHeight;
+
+
+    global.screen.width = global.playerType == 'player' ? window.innerWidth : global.game.width;
+    global.screen.height = global.playerType == 'player' ? window.innerHeight : global.game.height;
+
+    player.screenWidth = c.width = global.screen.width;
+    player.screenHeight = c.height = global.screen.height;
 
     if (global.playerType == 'spectator') {
         player.x = global.game.width / 2;
@@ -377,3 +460,4 @@ function resize() {
 
     socket.emit('windowResized', { screenWidth: global.screen.width, screenHeight: global.screen.height });
 }
+

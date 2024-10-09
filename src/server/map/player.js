@@ -4,12 +4,13 @@ const util = require('../lib/util');
 const sat = require('sat');
 const gameLogic = require('../game-logic');
 
-const MIN_SPEED = 6.25;
+const MIN_SPEED = 10;
 const SPLIT_CELL_SPEED = 20;
 const SPEED_DECREMENT = 0.5;
 const MIN_DISTANCE = 50;
 const PUSHING_AWAY_SPEED = 1.1;
 const MERGE_TIMER = 15;
+
 
 class Cell {
     constructor(x, y, mass, speed) {
@@ -334,7 +335,8 @@ exports.PlayerManager = class {
         for (var i = 0; i < Math.min(10, this.data.length); i++) {
             topPlayers.push({
                 id: this.data[i].id,
-                name: this.data[i].name
+                name: this.data[i].name,
+                mass: this.data[i].massTotal
             });
         }
         return topPlayers;

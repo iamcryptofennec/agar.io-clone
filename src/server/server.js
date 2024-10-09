@@ -13,7 +13,7 @@ const chatRepository = require('./repositories/chat-repository');
 const config = require('../../config');
 const util = require('./lib/util');
 const mapUtils = require('./map/map');
-const {getPosition} = require("./lib/entityUtils");
+const { getPosition } = require("./lib/entityUtils");
 
 let map = new mapUtils.Map(config);
 
@@ -176,6 +176,10 @@ const addPlayer = (socket) => {
         if (target.x !== currentPlayer.x || target.y !== currentPlayer.y) {
             currentPlayer.target = target;
         }
+        socket.emit('myStats', {
+            name: currentPlayer.name,
+            mass: currentPlayer.massTotal
+        });
     });
 
     socket.on('1', function () {
@@ -252,6 +256,10 @@ const tickPlayer = (currentPlayer) => {
         let massGained = eatenMassIndexes.reduce((acc, index) => acc + map.massFood.data[index].mass, 0);
 
         map.food.delete(eatenFoodIndexes);
+        // if (eatenFoodIndexes.length > 0) {
+        //     sockets[currentPlayer.id].emit('eaten', eatenFoodIndexes);
+        // }
+        //console.log(eatenFoodIndexes);
         map.massFood.remove(eatenMassIndexes);
         massGained += (eatenFoodIndexes.length * config.foodMass);
         currentPlayer.changeCellMass(cellIndex, massGained);
@@ -266,7 +274,7 @@ const tickGame = () => {
     map.players.handleCollisions(function (gotEaten, eater) {
         const cellGotEaten = map.players.getCell(gotEaten.playerIndex, gotEaten.cellIndex);
 
-        map.players.data[eater.playerIndex].changeCellMass(eater.cellIndex, cellGotEaten.mass);
+        map.players.data[eater.playerIndex].changeCellMass(eater.cellIndex, cellGotEaten.mass / 0.8); // Can't eat all mass at once, it's too much.
 
         const playerDied = map.players.removeCell(gotEaten.playerIndex, gotEaten.cellIndex);
         if (playerDied) {
@@ -282,18 +290,18 @@ const tickGame = () => {
 const calculateLeaderboard = () => {
     const topPlayers = map.players.getTopPlayers();
 
-    if (leaderboard.length !== topPlayers.length) {
-        leaderboard = topPlayers;
-        leaderboardChanged = true;
-    } else {
-        for (let i = 0; i < leaderboard.length; i++) {
-            if (leaderboard[i].id !== topPlayers[i].id) {
-                leaderboard = topPlayers;
-                leaderboardChanged = true;
-                break;
-            }
-        }
-    }
+    //if (leaderboard.length !== topPlayers.length) {
+    leaderboard = topPlayers;
+    leaderboardChanged = true;
+    // } else {
+    //     for (let i = 0; i < leaderboard.length; i++) {
+    //         if (leaderboard[i].id !== topPlayers[i].id) {
+    //             leaderboard = topPlayers;
+    //             leaderboardChanged = true;
+    //             break;
+    //         }
+    //     }
+    // }
 }
 
 const gameloop = () => {
@@ -309,9 +317,9 @@ const sendUpdates = () => {
     spectators.forEach(updateSpectator);
     map.enumerateWhatPlayersSee(function (playerData, visiblePlayers, visibleFood, visibleMass, visibleViruses) {
         sockets[playerData.id].emit('serverTellPlayerMove', playerData, visiblePlayers, visibleFood, visibleMass, visibleViruses);
-        if (leaderboardChanged) {
-            sendLeaderboard(sockets[playerData.id]);
-        }
+        //if (leaderboardChanged) {
+        sendLeaderboard(sockets[playerData.id]);
+        // }
     });
 
     leaderboardChanged = false;

@@ -23,9 +23,9 @@ module.exports = {
     gameStart: false,
     disconnected: false,
     kicked: false,
-    continuity: false,
+    continuity: true,
     startPingTime: 0,
     toggleMassState: 0,
-    backgroundColor: '#f2fbff',
+    backgroundColor: '#000000',
     lineColor: '#000000',
 };

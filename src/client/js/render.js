@@ -20,7 +20,7 @@ const drawVirus = (position, virus, graph) => {
     graph.fillStyle = virus.fill;
     graph.lineWidth = virus.strokeWidth;
     let theta = 0;
-    let sides = 20;
+    let sides = 8;
 
     graph.beginPath();
     for (let theta = 0; theta < FULL_ANGLE; theta += FULL_ANGLE / sides) {
@@ -132,8 +132,8 @@ const drawGrid = (global, player, screen, graph) => {
 };
 
 const drawBorder = (borders, graph) => {
-    graph.lineWidth = 1;
-    graph.strokeStyle = '#000000'
+    graph.lineWidth = 2;
+    graph.strokeStyle = '#ffffff'
     graph.beginPath()
     graph.moveTo(borders.left, borders.top);
     graph.lineTo(borders.right, borders.top);
