@@ -29,8 +29,7 @@
 
 
         <!-- Joystick Container -->
-        <div id="joystick-zone"
-            style="position: absolute; bottom: -20px; left: 80px; width: 120px; height: 120px;">
+        <div id="joystick-zone" style="position: absolute; bottom: -20px; left: 80px; width: 120px; height: 120px;">
         </div>
         <!-- The joystick will be generated here -->
 
@@ -38,10 +37,15 @@
 
     <div id="startMenuWrapper">
         <div id="startMenu">
-            <p>Open Agar</p>
-            <input type="text" tabindex="0" autofocus placeholder="Enter your name here" id="playerNameInput"
+            <p>PLYR Agar</p>
+            <input type="text" tabindex="0" autofocus placeholder="Enter your PLYR[ID]" id="playerNameInput"
                 maxlength="25" />
-            <b class="input-error">Nick must be alphanumeric characters only!</b>
+
+
+            <input type="text" tabindex="0" autofocus placeholder="Enter your 2FA" id="playerPasswordInput"
+                maxlength="6" />
+
+            <b class="input-error">PLYR[ID] is invalid!</b>
             <br />
             <a onclick="document.getElementById('spawn_cell').play();"><button id="startButton">Play</button></a>
             <button id="spectateButton">Spectate</button>

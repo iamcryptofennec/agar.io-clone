@@ -15,6 +15,9 @@ const util = require('./lib/util');
 const mapUtils = require('./map/map');
 const { getPosition } = require("./lib/entityUtils");
 
+// PLYR API //
+const plyrapi = require('./plyrapi');
+
 let map = new mapUtils.Map(config);
 
 let sockets = {};
@@ -27,6 +30,22 @@ let leaderboardChanged = false;
 const Vector = SAT.Vector;
 
 app.use(express.static(__dirname + '/../client'));
+
+// Json body parser
+app.use(express.json());
+
+app.post('/login', async (req, res) => {
+    const { playerName, playerPassword } = req.body;
+    console.log(`[LOGIN] ${playerName} ${playerPassword}`);
+    const apires = await plyrapi.userLogin(playerName, playerPassword);
+    console.log(apires);
+    if (apires.success) {
+        res.json({ success: true, data: apires.message });
+    } else {
+        res.json({ success: false, error: apires.message.error });
+    }
+});
+
 
 io.on('connection', function (socket) {
     let type = socket.handshake.query.type;
@@ -51,6 +70,14 @@ function generateSpawnpoint() {
 
 const addPlayer = (socket) => {
     var currentPlayer = new mapUtils.playerUtils.Player(socket.id);
+
+    // Check JWTs //
+    var sessionJwt = socket.handshake.query.sessionJwt;
+
+    if (!sessionJwt) {
+        console.log('[ERROR] No session JWT provided');
+        socket.disconnect();
+    }
 
     socket.on('gotit', function (clientPlayerData) {
         console.log('[INFO] Player ' + clientPlayerData.name + ' connecting!');

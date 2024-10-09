@@ -17,17 +17,40 @@ if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
     global.mobile = true;
 }
 
-function startGame(type) {
-    global.playerName = playerNameInput.value.replace(/(<([^>]+)>)/ig, '').substring(0, 25);
+async function startGame(type) {
+    global.playerName = playerNameInput.value.toLowerCase();
+    global.playerPassword = playerPasswordInput.value.toLowerCase();
     global.playerType = type;
 
     global.screen.width = window.innerWidth;
     global.screen.height = window.innerHeight;
 
+
+    // Do login first //
+    let response = await fetch('/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            playerName: global.playerName,
+            playerPassword: global.playerPassword
+        })
+    })
+    .then(response => response.json());
+
+    if (!response.success) {
+        var nickErrorText = document.querySelector('#startMenu .input-error');
+        nickErrorText.innerHTML = response.error;
+        nickErrorText.style.display = 'block';
+        return;
+    }
+
+
     document.getElementById('startMenuWrapper').style.maxHeight = '0px';
     document.getElementById('gameAreaWrapper').style.opacity = 1;
     if (!socket) {
-        socket = io({ query: "type=" + type });
+        socket = io({ query: "type=" + type + "&sessionJwt=" + response.data.sessionJwt });
         setupSocket(socket);
     }
     if (!global.animLoopHandle)
@@ -41,7 +64,10 @@ function startGame(type) {
 
 // Checks if the nick chosen contains valid alphanumeric characters (and underscores).
 function validNick() {
-    var regex = /^\w*$/;
+    if (playerNameInput.value.length < 3) {
+        return false;
+    }
+    var regex = /^[\w-]*$/;
     debug('Regex Test', regex.exec(playerNameInput.value));
     return regex.exec(playerNameInput.value) !== null;
 }
@@ -60,10 +86,11 @@ window.onload = function () {
 
         // Checks if the nick is valid.
         if (validNick()) {
-            nickErrorText.style.opacity = 0;
+            nickErrorText.style.display = 'none';
             startGame('player');
         } else {
-            nickErrorText.style.opacity = 1;
+            nickErrorText.style.display = 'block';
+            nickErrorText.innerHTML = 'PLYR[ID] is invalid!';
         }
     };
 
@@ -174,32 +201,7 @@ function handleDisconnect() {
     }
 }
 
-// Draw leaderboard //
-function drawLeaderboard(leaderboard, users) {
-    var status = '<span class="title">Leaderboard</span>';
-    for (var i = 0; i < leaderboard.length; i++) {
 
-        // map .mass from users that match to leaderboard[i].id
-        const user = users.find(user => user.id === leaderboard[i].id);
-        const mass = user ? user.massTotal : 0;
-
-        status += '<br />';
-        if (leaderboard[i].id == player.id) {
-            if (leaderboard[i].name.length !== 0)
-                status += '<span class="me">' + (i + 1) + '. ' + leaderboard[i].name + '-' + mass + "</span>";
-            else
-                status += '<span class="me">' + (i + 1) + ". An unnamed cell-" + mass + "</span>";
-        } else {
-            if (leaderboard[i].name.length !== 0)
-                status += (i + 1) + '. ' + leaderboard[i].name + '-' + mass;
-            else
-                status += (i + 1) + '. An unnamed cell-' + mass;
-        }
-    }
-    //console.log(users);
-    status += '<br />Players: ' + users.length;
-    document.getElementById('status').innerHTML = status;
-}
 
 // socket stuff.
 function setupSocket(socket) {
@@ -260,7 +262,7 @@ function setupSocket(socket) {
 
     socket.on('leaderboard', (data) => {
         leaderboard = data.leaderboard;
-        drawLeaderboard(leaderboard, users);
+        render.drawLeaderboard(leaderboard, users, player);
         
     });
 
@@ -287,7 +289,7 @@ function setupSocket(socket) {
         viruses = virusList;
         fireFood = massList;
 
-        drawLeaderboard(leaderboard, users);
+        render.drawLeaderboard(leaderboard, users, player);
     });
 
     // Death.
@@ -432,7 +434,7 @@ function gameLoop() {
                     color: color,
                     borderColor: borderColor,
                     mass: users[i].cells[j].mass,
-                    name: users[i].name,
+                    name: users[i].name.toUpperCase(),
                     radius: users[i].cells[j].radius,
                     x: users[i].cells[j].x - player.x + global.screen.width / 2,
                     y: users[i].cells[j].y - player.y + global.screen.height / 2

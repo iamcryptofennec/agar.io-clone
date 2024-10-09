@@ -3,12 +3,15 @@
     font-size: 14px;
 }
 
-html, body {
+html,
+body {
     background-color: #222;
     overflow: hidden;
 }
 
-html, body, canvas {
+html,
+body,
+canvas {
     width: 100%;
     height: 100%;
     margin: 0;
@@ -18,10 +21,14 @@ html, body, canvas {
 }
 
 div {
-    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
-    -moz-user-select: none; /* mozilla browsers */
-    -khtml-user-select: none; /* webkit (konqueror) browsers */
-    -ms-user-select: none; /* IE10+ */
+    -webkit-user-select: none;
+    /* webkit (safari, chrome) browsers */
+    -moz-user-select: none;
+    /* mozilla browsers */
+    -khtml-user-select: none;
+    /* webkit (konqueror) browsers */
+    -ms-user-select: none;
+    /* IE10+ */
 }
 
 #split {
@@ -87,6 +94,7 @@ div {
     box-sizing: border-box;
     height: 285px;
     overflow: hidden;
+    color: white;
 }
 
 .chatbox .chat-list li {
@@ -120,6 +128,7 @@ div {
     border: none;
     border-top: 1px solid #DDD;
     outline: none;
+    color: white;
 }
 
 #startMenu {
@@ -128,9 +137,9 @@ div {
     margin-top: 100px;
     width: 350px;
     padding: 20px;
-    border-radius: 5px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
+    border-radius: 1.25rem;
+    -moz-border-radius: 1.25rem;
+    -webkit-border-radius: 1.25rem;
     background-color: white;
     box-sizing: border-box;
 }
@@ -142,7 +151,7 @@ div {
     font-weight: bold;
 }
 
-#playerNameInput {
+#playerNameInput, #playerPasswordInput {
     width: 100%;
     text-align: center;
     padding: 10px;
@@ -154,14 +163,17 @@ div {
     -webkit-border-radius: 5px;
     margin-bottom: 10px;
     outline: none;
+    text-transform: uppercase;
 }
 
-#playerNameInput:focus, #playerNameInput.focus {
+#playerNameInput:focus,
+#playerNameInput.focus {
     border: solid 1px #CCCCCC;
     box-shadow: 0 0 3px 1px #DDDDDD;
 }
 
-#startButton, #spectateButton {
+#startButton,
+#spectateButton {
     position: relative;
     margin: auto;
     margin-top: 10px;
@@ -172,22 +184,24 @@ div {
     color: white;
     text-align: center;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
-    background: #2ecc71;
+    background: #ff6600;
     border: 0;
-    border-bottom: 2px solid #28be68;
+    border-bottom: 2px solid #d75600;
     cursor: pointer;
-    -webkit-box-shadow: inset 0 -2px #28be68;
-    box-shadow: inset 0 -2px #28be68;
-    border-radius: 5px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    margin-bottom: 10px;
+    -webkit-box-shadow: inset 0 -2px #d75600;
+    box-shadow: inset 0 -2px #d75600;
+    border-radius: 2rem;
+    -moz-border-radius: 2rem;
+    -webkit-border-radius: 2rem;
+    margin-bottom: 0px;
 }
 
-#spectateButton:active, #spectateButton:hover,
-#startButton:active, #startButton:hover {
+#spectateButton:active,
+#spectateButton:hover,
+#startButton:active,
+#startButton:hover {
     top: 1px;
-    background: #55D88B;
+    background: #ff6600;
     outline: none;
     -webkit-box-shadow: none;
     box-shadow: none;
@@ -216,7 +230,8 @@ div {
     margin-bottom: 10px;
 }
 
-#settingsButton:active, #settingsButton:hover {
+#settingsButton:active,
+#settingsButton:hover {
     top: 1px;
     background: #55D88B;
     outline: none;
@@ -224,7 +239,8 @@ div {
     box-shadow: none;
 }
 
-#settings, #startMenuWrapper {
+#settings,
+#startMenuWrapper {
     -webkit-transition: max-height 1s;
     -moz-transition: max-height 1s;
     -ms-transition: max-height 1s;
@@ -250,8 +266,8 @@ div {
 
 #startMenu .input-error {
     color: red;
-    opacity: 0;
-    font-size : 12px;
+    font-size: 12px;
+    display: none;
 }
 
 #startMenuWrapper {
@@ -265,25 +281,27 @@ div {
     opacity: 0;
 }
 
-@media only screen  and (min-width : 1224px) {
-#mobile, #joystick-zone {
-display: none;
-	}
+@media only screen and (min-width : 1224px) {
+
+    #mobile,
+    #joystick-zone {
+        display: none;
+    }
 }
 
-@media only screen  and (max-width : 1224px) {
-#chatbox {
-display: none;
-        }
+@media only screen and (max-width : 1224px) {
+    #chatbox {
+        display: none;
+    }
 }
 
-input [type="image"]:focus{
- border:none;
- outline: 1px solid transparent;
- border-style: none;
+input [type="image"]:focus {
+    border: none;
+    outline: 1px solid transparent;
+    border-style: none;
 }
 
 *:focus {
- outline: 1px solid transparent;
- border-style: none;
+    outline: 1px solid transparent;
+    border-style: none;
 }

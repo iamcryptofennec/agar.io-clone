@@ -152,6 +152,30 @@ const drawErrorMessage = (message, graph, screen) => {
     graph.fillText(message, screen.width / 2, screen.height / 2);
 }
 
+// Draw leaderboard //
+const drawLeaderboard = (leaderboard, users, player) => {
+
+    console.log('drawLeaderboard', leaderboard, users);
+
+    var status = '<span class="title">Leaderboard</span>';
+    for (var i = 0; i < leaderboard.length; i++) {
+
+        // map .mass from users that match to leaderboard[i].id
+        const user = users.find(user => user.id === leaderboard[i].id);
+        const mass = user ? user.massTotal : 0;
+
+        status += '<br />';
+        if (leaderboard[i].id == player.id) {
+            status += '<span class="me">' + (i + 1) + '. ' + leaderboard[i].name.toUpperCase() + '-' + mass + "</span>";
+        } else {
+            status += (i + 1) + '. ' + leaderboard[i].name.toUpperCase() + '-' + mass;
+        }
+    }
+    //console.log(users);
+    status += '<br />Players: ' + users.length;
+    document.getElementById('status').innerHTML = status;
+}
+
 module.exports = {
     drawFood,
     drawVirus,
@@ -159,5 +183,6 @@ module.exports = {
     drawCells,
     drawErrorMessage,
     drawGrid,
-    drawBorder
+    drawBorder,
+    drawLeaderboard
 };
