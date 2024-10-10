@@ -28,7 +28,8 @@ async function startGame(type) {
 
     // Do login first for Players //
     let response = undefined;
-    if (type === 'player') {
+    let previousJWT = window.localStorage.getItem('previousJWT');
+    if (type === 'player' && !previousJWT) {
         response = await fetch('/login', {
             method: 'POST',
             headers: {
@@ -50,6 +51,7 @@ async function startGame(type) {
 
         // Save the PLYR[ID] to localStorage
         window.localStorage.setItem('previousPLYRID', global.playerName);
+        window.localStorage.setItem('previousJWT', response.data.sessionJwt);
     }
 
 
@@ -57,7 +59,12 @@ async function startGame(type) {
     document.getElementById('gameAreaWrapper').style.opacity = 1;
     if (!socket) {
         if (type === 'player') {
-            socket = io({ query: "type=" + type + "&sessionJwt=" + response.data.sessionJwt });
+            if (previousJWT) {
+                socket = io({ query: "type=" + type + "&sessionJwt=" + previousJWT });
+            }
+            else {
+                socket = io({ query: "type=" + type + "&sessionJwt=" + response.data.sessionJwt });
+            }
         } else {
             socket = io({ query: "type=" + type });
         }
@@ -89,17 +96,96 @@ window.onload = function () {
         btnS = document.getElementById('spectateButton'),
         nickErrorText = document.querySelector('#startMenu .input-error'),
         playerNameInput = document.getElementById('playerNameInput'),
-        playerPasswordInput = document.getElementById('playerPasswordInput');
+        playerPasswordInput = document.getElementById('playerPasswordInput'),
+        logoutButton = document.getElementById('logoutButton');
 
     let previousPLYRID = window.localStorage.getItem('previousPLYRID');
-    if (previousPLYRID) {
-        playerPasswordInput.focus();
-        // Set the value of the playerNameInput to the previous PLYR[ID]
-        playerNameInput.value = previousPLYRID;
-    } else {
-        playerNameInput.focus();
+    let previousJWT = window.localStorage.getItem('previousJWT');
+
+    logoutButton.onclick = function () {
+        window.localStorage.removeItem('previousJWT');
+        location.reload();
     }
-    
+
+    if (!previousJWT) {
+        logoutButton.style.display = 'none';
+        if (previousPLYRID) {
+            playerPasswordInput.focus();
+            // Set the value of the playerNameInput to the previous PLYR[ID]
+            playerNameInput.value = previousPLYRID;
+        } else {
+            playerNameInput.focus();
+        }
+    }
+    else {
+        logoutButton.style.display = 'block';
+        playerPasswordInput.style.display = 'none';
+        playerNameInput.value = previousPLYRID;
+    }
+
+
+    btnS.onclick = function () {
+        startGame('spectator');
+    };
+
+    loginForm.onsubmit = function (e) {
+        e.preventDefault();
+
+        // Checks if the nick is valid.
+        if (validNick()) {
+            nickErrorText.style.display = 'none';
+            startGame('player');
+        } else {
+            nickErrorText.style.display = 'block';
+            nickErrorText.innerHTML = 'PLYR[ID] is invalid!';
+        }
+    };
+};
+
+// Checks if the nick chosen contains valid alphanumeric characters (and underscores).
+function validNick() {
+    if (playerNameInput.value.length < 3) {
+        return false;
+    }
+    var regex = /^[\w-]*$/;
+    debug('Regex Test', regex.exec(playerNameInput.value));
+    return regex.exec(playerNameInput.value) !== null;
+}
+
+window.onload = function () {
+
+    var loginForm = document.getElementById('loginForm'),
+        //btn = document.getElementById('startButton'),
+        btnS = document.getElementById('spectateButton'),
+        nickErrorText = document.querySelector('#startMenu .input-error'),
+        playerNameInput = document.getElementById('playerNameInput'),
+        playerPasswordInput = document.getElementById('playerPasswordInput'),
+        logoutButton = document.getElementById('logoutButton');
+
+    let previousPLYRID = window.localStorage.getItem('previousPLYRID');
+    let previousJWT = window.localStorage.getItem('previousJWT');
+
+    logoutButton.onclick = function () {
+        window.localStorage.removeItem('previousJWT');
+        location.reload();
+    }
+
+    if (!previousJWT) {
+        logoutButton.style.display = 'none';
+        if (previousPLYRID) {
+            playerPasswordInput.focus();
+            // Set the value of the playerNameInput to the previous PLYR[ID]
+            playerNameInput.value = previousPLYRID;
+        } else {
+            playerNameInput.focus();
+        }
+    }
+    else {
+        logoutButton.style.display = 'block';
+        playerPasswordInput.style.display = 'none';
+        playerNameInput.value = previousPLYRID;
+    }
+
 
     btnS.onclick = function () {
         startGame('spectator');

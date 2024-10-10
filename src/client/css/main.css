@@ -172,8 +172,19 @@ div {
     box-shadow: 0 0 3px 1px #DDDDDD;
 }
 
+#or {
+    margin: auto;
+    margin-top: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: large;
+    color: black;
+    text-align: center;
+}
+
+
 #startButton,
-#spectateButton {
+#spectateButton, #logoutButton {
     position: relative;
     margin: auto;
     margin-top: 10px;
@@ -196,10 +207,17 @@ div {
     margin-bottom: 0px;
 }
 
+#logoutButton {
+    display: none;
+}
+
+
 #spectateButton:active,
 #spectateButton:hover,
 #startButton:active,
-#startButton:hover {
+#startButton:hover,
+#logoutButton:active,
+#logoutButton:hover {
     top: 1px;
     background: #ff6600;
     outline: none;
