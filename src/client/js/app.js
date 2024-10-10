@@ -142,69 +142,6 @@ window.onload = function () {
     };
 };
 
-// Checks if the nick chosen contains valid alphanumeric characters (and underscores).
-function validNick() {
-    if (playerNameInput.value.length < 3) {
-        return false;
-    }
-    var regex = /^[\w-]*$/;
-    debug('Regex Test', regex.exec(playerNameInput.value));
-    return regex.exec(playerNameInput.value) !== null;
-}
-
-window.onload = function () {
-
-    var loginForm = document.getElementById('loginForm'),
-        //btn = document.getElementById('startButton'),
-        btnS = document.getElementById('spectateButton'),
-        nickErrorText = document.querySelector('#startMenu .input-error'),
-        playerNameInput = document.getElementById('playerNameInput'),
-        playerPasswordInput = document.getElementById('playerPasswordInput'),
-        logoutButton = document.getElementById('logoutButton');
-
-    let previousPLYRID = window.localStorage.getItem('previousPLYRID');
-    let previousJWT = window.localStorage.getItem('previousJWT');
-
-    logoutButton.onclick = function () {
-        window.localStorage.removeItem('previousJWT');
-        location.reload();
-    }
-
-    if (!previousJWT) {
-        logoutButton.style.display = 'none';
-        if (previousPLYRID) {
-            playerPasswordInput.focus();
-            // Set the value of the playerNameInput to the previous PLYR[ID]
-            playerNameInput.value = previousPLYRID;
-        } else {
-            playerNameInput.focus();
-        }
-    }
-    else {
-        logoutButton.style.display = 'block';
-        playerPasswordInput.style.display = 'none';
-        playerNameInput.value = previousPLYRID;
-    }
-
-
-    btnS.onclick = function () {
-        startGame('spectator');
-    };
-
-    loginForm.onsubmit = function (e) {
-        e.preventDefault();
-
-        // Checks if the nick is valid.
-        if (validNick()) {
-            nickErrorText.style.display = 'none';
-            startGame('player');
-        } else {
-            nickErrorText.style.display = 'block';
-            nickErrorText.innerHTML = 'PLYR[ID] is invalid!';
-        }
-    };
-};
-
 // TODO: Break out into GameControls.
 
 var playerConfig = {
