@@ -3,22 +3,25 @@
 const util = require('../lib/util');
 const sat = require('sat');
 const gameLogic = require('../game-logic');
+var BigNumber = require('bignumber.js');
 
 const MIN_SPEED = 10;
 const SPLIT_CELL_SPEED = 20;
 const SPEED_DECREMENT = 0.5;
 const MIN_DISTANCE = 50;
 const PUSHING_AWAY_SPEED = 1.1;
-const MERGE_TIMER = 15;
+const MERGE_TIMER = 15; //15
 
 
 class Cell {
-    constructor(x, y, mass, speed) {
+    constructor(x, y, mass, speed, reward) {
         this.x = x;
         this.y = y;
         this.mass = mass;
         this.radius = util.massToRadius(mass);
         this.speed = speed;
+        this.reward = reward;
+        //console.log('reward', reward);
     }
 
     setMass(mass) {
@@ -97,7 +100,7 @@ exports.Player = class {
 
     /* Initalizes things that change with every respawn */
     init(position, defaultPlayerMass) {
-        this.cells = [new Cell(position.x, position.y, defaultPlayerMass, MIN_SPEED)];
+        this.cells = [new Cell(position.x, position.y, defaultPlayerMass, MIN_SPEED, 1)];
         this.massTotal = defaultPlayerMass;
         this.x = position.x;
         this.y = position.y;
@@ -105,6 +108,7 @@ exports.Player = class {
             x: 0,
             y: 0
         };
+        this.rewardTotal = 1; // GAMR
     }
 
     clientProvidedData(playerData) {
@@ -136,6 +140,15 @@ exports.Player = class {
         this.massTotal += massDifference;
     }
 
+    changeCellReward(cellIndex, rewardDifference) {
+        // Use BigNumber for floating point precision
+        this.cells[cellIndex].reward = new BigNumber(this.cells[cellIndex].reward).plus(rewardDifference).toNumber();
+        this.rewardTotal = new BigNumber(this.rewardTotal).plus(rewardDifference).toNumber();
+
+        //this.cells[cellIndex].reward += rewardDifference;
+       // this.rewardTotal += rewardDifference;
+    }
+
     removeCell(cellIndex) {
         this.massTotal -= this.cells[cellIndex].mass;
         this.cells.splice(cellIndex, 1);
@@ -154,10 +167,14 @@ exports.Player = class {
             return;
         }
         let newCellsMass = cellToSplit.mass / piecesToCreate;
+        let newCellsReward = cellToSplit.reward / piecesToCreate;
         for (let i = 0; i < piecesToCreate - 1; i++) {
-            this.cells.push(new Cell(cellToSplit.x, cellToSplit.y, newCellsMass, SPLIT_CELL_SPEED));
+            this.cells.push(new Cell(cellToSplit.x, cellToSplit.y, newCellsMass, SPLIT_CELL_SPEED, newCellsReward));
         }
+
+        // Update current cell with new mass and reward
         cellToSplit.setMass(newCellsMass)
+        cellToSplit.reward = newCellsReward;
         this.setLastSplit();
     }
 
@@ -212,7 +229,10 @@ exports.Player = class {
     mergeCollidingCells() {
         this.enumerateCollidingCells(function (cells, cellAIndex, cellBIndex) {
             cells[cellAIndex].addMass(cells[cellBIndex].mass);
+            // Use BigNumber for floating point precision
+            cells[cellAIndex].reward = new BigNumber(cells[cellAIndex].reward).plus(cells[cellBIndex].reward).toNumber();
             cells[cellBIndex] = null;
+            
         });
     }
 
@@ -336,7 +356,8 @@ exports.PlayerManager = class {
             topPlayers.push({
                 id: this.data[i].id,
                 name: this.data[i].name,
-                mass: this.data[i].massTotal
+                mass: this.data[i].massTotal,
+                reward: this.data[i].rewardTotal
             });
         }
         return topPlayers;

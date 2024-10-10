@@ -103,13 +103,20 @@ const drawCells = (cells, playerConfig, toggleMassState, borders, graph) => {
 
         
 
-        // Draw the mass (if enabled)
-        if (toggleMassState === 1) {
+        // Draw the mass
+        
+            // graph.font = 'bold ' + Math.max(fontSize / 3 * 2, 10) + 'px sans-serif';
+            // if (cell.name.length === 0) fontSize = 0;
+            // graph.strokeText(Math.round(cell.mass), cell.x, cell.y + fontSize);
+            // graph.fillText(Math.round(cell.mass), cell.x, cell.y + fontSize);
+        
+
+        // Draw the reward
+        
             graph.font = 'bold ' + Math.max(fontSize / 3 * 2, 10) + 'px sans-serif';
-            if (cell.name.length === 0) fontSize = 0;
-            graph.strokeText(Math.round(cell.mass), cell.x, cell.y + fontSize);
-            graph.fillText(Math.round(cell.mass), cell.x, cell.y + fontSize);
-        }
+            graph.strokeText(cell.reward + ' GAMR', cell.x, cell.y + fontSize);
+            graph.fillText(cell.reward + ' GAMR', cell.x, cell.y + fontSize);
+        
     }
 };
 
@@ -157,7 +164,7 @@ const drawErrorMessage = (message, graph, screen) => {
 // Draw leaderboard //
 const drawLeaderboard = (leaderboard, playerAmount, player) => {
 
-    //console.log('drawLeaderboard', leaderboard, users);
+    console.log('drawLeaderboard', leaderboard);
 
     var status = '<span class="title">Leaderboard</span>';
     for (var i = 0; i < leaderboard.length; i++) {

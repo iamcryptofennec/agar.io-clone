@@ -2,7 +2,8 @@ module.exports = {
     host: "0.0.0.0",
     port: 3000,
     logpath: "logger.php",
-    foodMass: 1,
+    foodMass: 1, //1
+    foodRewardPerItem: 0.005, // Each food item is worth 0.005 reward
     fireFood: 20,
     limitSplit: 16,
     defaultPlayerMass: 10,

@@ -6,7 +6,7 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const SAT = require('sat');
-
+var BigNumber = require('bignumber.js');
 const gameLogic = require('./game-logic');
 const loggingRepositry = require('./repositories/logging-repository');
 const chatRepository = require('./repositories/chat-repository');
@@ -290,6 +290,7 @@ const tickPlayer = (currentPlayer) => {
         map.massFood.remove(eatenMassIndexes);
         massGained += (eatenFoodIndexes.length * config.foodMass);
         currentPlayer.changeCellMass(cellIndex, massGained);
+        currentPlayer.changeCellReward(cellIndex, eatenFoodIndexes.length * config.foodRewardPerItem);
     }
     currentPlayer.virusSplit(cellsToSplit, config.limitSplit, config.defaultPlayerMass);
 };
@@ -302,6 +303,11 @@ const tickGame = () => {
         const cellGotEaten = map.players.getCell(gotEaten.playerIndex, gotEaten.cellIndex);
 
         map.players.data[eater.playerIndex].changeCellMass(eater.cellIndex, cellGotEaten.mass / 0.8); // Can't eat all mass at once, it's too much.
+
+        // Add reward to eater with 20% less reward and use Bignumber.js for reward to prevent overflow
+        const rewardChanged =  new BigNumber(cellGotEaten.reward).multipliedBy(0.8).toNumber();
+       
+        map.players.data[eater.playerIndex].changeCellReward(eater.cellIndex, rewardChanged); // take 20% of the reward
 
         const playerDied = map.players.removeCell(gotEaten.playerIndex, gotEaten.cellIndex);
         if (playerDied) {
