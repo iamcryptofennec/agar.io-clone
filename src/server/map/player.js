@@ -3,13 +3,14 @@
 const util = require('../lib/util');
 const sat = require('sat');
 const gameLogic = require('../game-logic');
-
+const BigNumber = require('bignumber.js');
 const MIN_SPEED = 10;
 const SPLIT_CELL_SPEED = 20;
 const SPEED_DECREMENT = 0.5;
 const MIN_DISTANCE = 50;
 const PUSHING_AWAY_SPEED = 1.1;
 const MERGE_TIMER = 15;
+const REWARD_PER_MASS = 0.005;
 
 
 class Cell {
@@ -17,17 +18,37 @@ class Cell {
         this.x = x;
         this.y = y;
         this.mass = mass;
+        // Use BigNumber for reward to prevent overflow
+        this.reward = new BigNumber(mass - 10).multipliedBy(REWARD_PER_MASS).toNumber();
         this.radius = util.massToRadius(mass);
         this.speed = speed;
     }
 
     setMass(mass) {
         this.mass = mass;
+        // Use BigNumber for reward to prevent overflow
+        this.reward = new BigNumber(mass - 10).multipliedBy(REWARD_PER_MASS).toNumber();
         this.recalculateRadius();
     }
 
-    addMass(mass) {
-        this.setMass(this.mass + mass);
+    setMassByPiece(mass, pieces) {
+        this.mass = mass;
+        // Use BigNumber for reward to prevent overflow
+        let pieceReward = new BigNumber(mass).minus(BigNumber(10).dividedBy(pieces));
+        //console.log(mass, pieceReward.toNumber());
+        this.reward = pieceReward.multipliedBy(REWARD_PER_MASS).toNumber();
+        //console.log(this.reward);
+        this.recalculateRadius();
+    }
+
+    addMass(mass, pieces = 1) {
+        if (pieces === 1) {
+            this.setMass(this.mass + mass);
+        }
+        else {
+            this.setMassByPiece(this.mass + mass, pieces);
+        }
+        //console.log(this.reward);
     }
 
     recalculateRadius() {
@@ -89,6 +110,7 @@ exports.Player = class {
         this.hue = Math.round(Math.random() * 360);
         this.name = null;
         this.admin = false;
+        this.rewardTotal = 0;
         this.screenWidth = null;
         this.screenHeight = null;
         this.timeToMerge = null;
@@ -132,8 +154,14 @@ exports.Player = class {
     }
 
     changeCellMass(cellIndex, massDifference) {
-        this.cells[cellIndex].addMass(massDifference)
+
+        this.cells.length === 1 ? this.cells[cellIndex].addMass(massDifference) : this.cells[cellIndex].addMass(massDifference, this.cells.length);
+
+       // this.cells[cellIndex].addMass(massDifference)
         this.massTotal += massDifference;
+        // Use BigNumber for reward to prevent overflow
+        this.rewardTotal = new BigNumber(this.massTotal - 10).multipliedBy(REWARD_PER_MASS).toNumber();
+        // console.log(this.rewardTotal);
     }
 
     removeCell(cellIndex) {
@@ -157,7 +185,7 @@ exports.Player = class {
         for (let i = 0; i < piecesToCreate - 1; i++) {
             this.cells.push(new Cell(cellToSplit.x, cellToSplit.y, newCellsMass, SPLIT_CELL_SPEED));
         }
-        cellToSplit.setMass(newCellsMass)
+        cellToSplit.setMassByPiece(newCellsMass, piecesToCreate)
         this.setLastSplit();
     }
 
@@ -247,7 +275,7 @@ exports.Player = class {
         for (let i = 0; i < this.cells.length; i++) {
             let cell = this.cells[i];
             cell.move(this.x, this.y, this.target, slowBase, initMassLog);
-            gameLogic.adjustForBoundaries(cell, cell.radius/3, 0, gameWidth, gameHeight);
+            gameLogic.adjustForBoundaries(cell, cell.radius / 3, 0, gameWidth, gameHeight);
 
             xSum += cell.x;
             ySum += cell.y;
@@ -336,7 +364,8 @@ exports.PlayerManager = class {
             topPlayers.push({
                 id: this.data[i].id,
                 name: this.data[i].name,
-                mass: this.data[i].massTotal
+                mass: this.data[i].massTotal,
+                reward: this.data[i].rewardTotal
             });
         }
         return topPlayers;

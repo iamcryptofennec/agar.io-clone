@@ -103,13 +103,17 @@ const drawCells = (cells, playerConfig, toggleMassState, borders, graph) => {
 
         
 
-        // Draw the mass (if enabled)
-        if (toggleMassState === 1) {
-            graph.font = 'bold ' + Math.max(fontSize / 3 * 2, 10) + 'px sans-serif';
-            if (cell.name.length === 0) fontSize = 0;
-            graph.strokeText(Math.round(cell.mass), cell.x, cell.y + fontSize);
-            graph.fillText(Math.round(cell.mass), cell.x, cell.y + fontSize);
-        }
+        // Draw the mass 
+       
+            // graph.font = 'bold ' + Math.max(fontSize / 3 * 2, 10) + 'px sans-serif';
+            // graph.strokeText(Math.round(cell.mass), cell.x, cell.y + fontSize);
+            // graph.fillText(Math.round(cell.mass), cell.x, cell.y + fontSize);
+        //}
+
+        // Draw the reward
+        graph.font = 'bold ' + Math.max(fontSize / 3 * 2, 10) + 'px sans-serif';
+        graph.strokeText(cell.reward + ' GAMR', cell.x, cell.y + fontSize); //*2
+        graph.fillText(cell.reward + ' GAMR', cell.x, cell.y + fontSize);
     }
 };
 
@@ -168,9 +172,9 @@ const drawLeaderboard = (leaderboard, playerAmount, player) => {
 
         status += '<br />';
         if (leaderboard[i].id == player.id) {
-            status += '<span class="me">' + (i + 1) + '. ' + leaderboard[i].name.toUpperCase() + '-' + Math.floor(leaderboard[i].mass) + "</span>";
+            status += '<span class="me">' + (i + 1) + '. ' + leaderboard[i].name.toUpperCase() + '-' + leaderboard[i].reward + ' GAMR' + "</span>";
         } else {
-            status += (i + 1) + '. ' + leaderboard[i].name.toUpperCase() + '-' + Math.floor(leaderboard[i].mass);
+            status += (i + 1) + '. ' + leaderboard[i].name.toUpperCase() + '-' + leaderboard[i].reward + ' GAMR';
         }
     }
     //console.log(users);

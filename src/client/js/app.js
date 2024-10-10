@@ -531,6 +531,7 @@ function gameLoop() {
                     color: color,
                     borderColor: borderColor,
                     mass: users[i].cells[j].mass,
+                    reward: users[i].cells[j].reward,
                     name: users[i].name.toUpperCase(),
                     radius: users[i].cells[j].radius,
                     x: users[i].cells[j].x - player.x + global.screen.width / 2,

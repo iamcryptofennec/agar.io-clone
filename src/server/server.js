@@ -301,7 +301,7 @@ const tickGame = () => {
     map.players.handleCollisions(function (gotEaten, eater) {
         const cellGotEaten = map.players.getCell(gotEaten.playerIndex, gotEaten.cellIndex);
 
-        map.players.data[eater.playerIndex].changeCellMass(eater.cellIndex, cellGotEaten.mass / 0.8); // Can't eat all mass at once, it's too much.
+        map.players.data[eater.playerIndex].changeCellMass(eater.cellIndex, Math.floor(cellGotEaten.reward / config.rewardPerMass * 0.8)); // Can't eat all mass at once, it's too much.
 
         const playerDied = map.players.removeCell(gotEaten.playerIndex, gotEaten.cellIndex);
         if (playerDied) {
